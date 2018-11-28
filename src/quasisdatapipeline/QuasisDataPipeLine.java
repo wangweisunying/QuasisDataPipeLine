@@ -268,20 +268,22 @@ public class QuasisDataPipeLine {
         sbAllJun.setLength(sbAllJun.length() - 1);
         
         String sqlIge = "SELECT \n" +
-"     sd.julien_barcode , c1.ige_2 , c2.ige_vw\n" +
+"     sd.julien_barcode , c1.ige_2 , c2.ige_vw ,c3.org_val\n" +
 "FROM\n" +
 "    vibrant_america_information.sample_data AS sd\n" +
+"    left join \n" +
+"     `vibrant_america_test_result`.`instrument_internal_test_result` as C3 on C3.sample_id  = sd.sample_id  \n" +
 "		left JOIN\n" +
 "    `vibrant_america_test_result`.`result_allergy_panel` AS C1 ON  C1.sample_id = sd.sample_id\n" +
 "		right join\n" +
-"	`vibrant_america_test_result`.`result_total_immunoglobulins_vw1` as C2 on C2.sample_id  = sd.sample_id\n" +
+"	`vibrant_america_test_result`.`result_total_immunoglobulins_vw1` as C2 on C2.sample_id  = sd.sample_id \n" +
 "    where sd.julien_barcode in ("+ sbAllJun.toString() +")\n" +
 "    ;";
         System.out.println(sqlIge);
         ResultSet rsIge = db.read(sqlIge);
         while(rsIge.next()){
             String jun = rsIge.getString(1);
-            float[] ige = new float[]{rsIge.getFloat(2) , rsIge.getFloat(3)};
+            float[] ige = new float[]{rsIge.getFloat(2) , rsIge.getFloat(3) , rsIge.getFloat(4)};
             igEMap.put(jun , ige);
         }
         System.out.println(dupJunMap);
@@ -421,6 +423,7 @@ public class QuasisDataPipeLine {
         }
         unitTitle.createCell(unitColCt + 1).setCellValue("TotalIGE2");
         unitTitle.createCell(unitColCt + 2).setCellValue("TotalIGEVW");
+        unitTitle.createCell(unitColCt + 3).setCellValue("OrgValue");
         // handle data
         
         colCt = 0;
@@ -462,6 +465,7 @@ public class QuasisDataPipeLine {
                 System.out.println(Arrays.toString(igEMap.get(julien)));
                 curUnitRow.createCell(unitColCt + 1).setCellValue(igEMap.get(julien)[0]);
                 curUnitRow.createCell(unitColCt + 2).setCellValue(igEMap.get(julien)[1]);
+                curUnitRow.createCell(unitColCt + 3).setCellValue(igEMap.get(julien)[2]);
             }
             
             rowCt++;
