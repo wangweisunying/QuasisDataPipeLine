@@ -6,7 +6,9 @@
 package quasisdatapipeline;
 
 import java.awt.Desktop;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,8 +27,11 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import quasisTest.FoodAllergy12;
+import quasisTest.FoodAllergy84;
 import quasisTest.QuasisTest;
+import quasisTest.Upre;
 
 /**
  *
@@ -37,7 +42,7 @@ public class QuasisDataPipeLine {
     /**
      * @param args the command line arguments
      */
-    private String pillarId = "FA1280060001000004";
+    private String pillarId = "UPRE80070010000011";
     String path = "C:\\Users\\Wei Wang\\Desktop\\FAAEDATA\\testOut\\"+ pillarId +".xlsx";
     private String dataTable, testType, negativeLocation , testName;
     private String[] indexTestMapArr , indexTestTitleArr ;
@@ -54,7 +59,7 @@ public class QuasisDataPipeLine {
     
     
     public static void main(String[] args) throws Exception {
-        QuasisDataPipeLine test = new QuasisDataPipeLine(new FoodAllergy12());
+        QuasisDataPipeLine test = new QuasisDataPipeLine(new Upre());
         test.run();
 //        test.writeToDB(test.path);
     }
@@ -225,7 +230,7 @@ public class QuasisDataPipeLine {
                     sbTitle.append(-2).append(",");
                     continue;
                 }
-                sbTitle.append(test).append(",");
+                sbTitle.append("`").append(test).append("`,");
             }
             sbTitle.setLength(sbTitle.length() - 1 );
             
@@ -508,7 +513,9 @@ public class QuasisDataPipeLine {
         ExcelOperation.setConditionalFormatting(sheetUnit, IndexedColors.YELLOW, ComparisonOperator.BETWEEN, new String[]{"0.8" , "10"}, range);
         ExcelOperation.setConditionalFormatting(sheetUnit, IndexedColors.GREEN, ComparisonOperator.LT, new String[]{"0.8"}, range);       
         ExcelOperation.writeExcel(path, wb);
-        Desktop.getDesktop().open(new File(path));
+        
+        File file = new File(path);
+        Desktop.getDesktop().open(file);
     }
 
 }

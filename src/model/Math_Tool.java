@@ -46,6 +46,10 @@ public class Math_Tool {
         }
 
     }
+    public static int greatCommonDiviser(int x , int y){
+        //辗转相除法
+        return x == 0 ? y : greatCommonDiviser(y % x , x);
+    }
 
     private static float partition(List<Float> list, int s, int e, int k) {
         if (s >= e) {

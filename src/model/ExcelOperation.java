@@ -26,7 +26,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * @author Wei Wang
  */
 public class ExcelOperation {
-
+    
+    public static void main(String[] args) throws Exception{
+        System.out.println(transferIntgerToString(77));
+ 
+    }
+    
+    
     public static enum ExcelType {
         XLS,
         XLSX,
@@ -90,12 +96,28 @@ public class ExcelOperation {
         // write from bottom 
         String res = "";
         while( n > 26){
-            res = (char)(n % 26 + 64) + res;
-            n = n / 26;
+            if(n % 26 == 0){
+                res = 'Z' + res;
+                n = n / 26 - 1;
+            }
+            else{
+                res = (char)(n % 26 + 64) + res;
+                n = n / 26;
+            }
         }
         res = (char)(n + 64) + res;
         return res;
     }
+    
+    public int titleToNumber(String s) {
+        char[] arr = s.toCharArray();
+        int res = 0;
+        for(int i = 0 ; i < arr.length ; i++){
+            res += (arr[i] - '@') * Math.pow(26 , arr.length - 1 - i);
+        }
+        return res;
+    }
+    
     
     public static void setConditionalFormatting(Sheet sheet , IndexedColors color , byte compare , String[] thresholdArr , String cellRange) throws Exception{
         if(thresholdArr == null || thresholdArr.length == 0 || thresholdArr.length > 2){
