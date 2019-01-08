@@ -6,22 +6,29 @@
 package test;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Wei Wang
  */
+
+
 public class Test {
 
     /**
      * @param args the command line arguments
      */
+    
     public static void main(String[] args) {
-        int[] arr = new int[10];
-        char[] x = "bvc".toCharArray();
-        Arrays.sort(x);
-        System.out.println(new String(x));
-              
+        Map<Character , Integer> children = new HashMap();
+        
+//        children.put
+//        ('', 123);
+        System.out.println(Arrays.toString("".toCharArray()));
     }
+    
+    
     
 }

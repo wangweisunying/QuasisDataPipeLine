@@ -5,6 +5,9 @@
  */
 package quasisTest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /**
  *
  * @author Wei Wang
@@ -13,8 +16,18 @@ public class FoodAllergy84 extends QuasisTest {
 
     public FoodAllergy84() {
         super();
+        this.oldPanelIndex2NewPanelIndexMap = new HashMap();
+        
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 8 , x -> new ArrayList()).add(29);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 9 , x -> new ArrayList()).add(75);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 12 , x -> new ArrayList()).add(94);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 16 , x -> new ArrayList()).add(65);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 16 , x -> new ArrayList()).add(76);
+        
         this.testName = "FAAE_84";
         this.testType = "Food_Allergy_84";
+        
+        this.unitDataTable = "tsp_test_unit_data.faae_unit_data";
         this.dataTable = "`vibrant_test_raw_data`.`food_allergy_84`";
         this.negativeLocation = "D6";
         this.indexTestTitleArr = new String[]{

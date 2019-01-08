@@ -5,6 +5,9 @@
  */
 package quasisTest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /**
  *
  * @author Wei Wang
@@ -14,9 +17,22 @@ public class FoodAllergy12 extends QuasisTest{
     
     public FoodAllergy12(){
         super();
+        this.oldPanelIndex2NewPanelIndexMap = new HashMap();
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 3 , x -> new ArrayList()).add(8);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 4 , x -> new ArrayList()).add(13);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 5 , x -> new ArrayList()).add(11);
+        
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 7 , x -> new ArrayList()).add(4);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 11 , x -> new ArrayList()).add(9);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 11 , x -> new ArrayList()).add(10);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 13 , x -> new ArrayList()).add(6);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 14 , x -> new ArrayList()).add(7);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 16 , x -> new ArrayList()).add(1);
+        
         this.testName = "FAAE_12";
         this.testType  = "Food_Allergy_12";
         this.dataTable = "`vibrant_test_raw_data`.`food_allergy_12`";
+        this.unitDataTable = "tsp_test_unit_data.faae_unit_data";
         this.negativeLocation = "H12";
         this.indexTestTitleArr = new String[]{
                                             "TUNA_IGE",
