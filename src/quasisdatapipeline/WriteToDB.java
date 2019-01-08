@@ -22,6 +22,8 @@ public class WriteToDB {
      */
     public static void main(String[] args) throws SQLException, IOException {
         QuasisDataPipeLine test = new QuasisDataPipeLine(new Upre());
+//        QuasisDataPipeLine test = new QuasisDataPipeLine(new FoodAllergy12());
+//        QuasisDataPipeLine test = new QuasisDataPipeLine(new FoodAllergy84());
         System.out.println(test.path);
         test.writeToDB(test.path);
     }

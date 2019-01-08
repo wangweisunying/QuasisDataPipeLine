@@ -22,9 +22,7 @@ public class Upre extends QuasisTest {
         
         this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 4 , x -> new ArrayList()).add(96);
         this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 5 , x -> new ArrayList()).add(84);
-        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 7 , x -> new ArrayList()).add(74);
-        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 7 , x -> new ArrayList()).add(87);
-        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 7 , x -> new ArrayList()).add(91);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 7 , x -> new ArrayList()).add(95);
         this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 8 , x -> new ArrayList()).add(88);
         this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 9 , x -> new ArrayList()).add(72);
         this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 10 , x -> new ArrayList()).add(80);
@@ -36,6 +34,7 @@ public class Upre extends QuasisTest {
         this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 17 , x -> new ArrayList()).add(3);
         this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 17 , x -> new ArrayList()).add(4);
         this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 19 , x -> new ArrayList()).add(19);
+        this.oldPanelIndex2NewPanelIndexMap.computeIfAbsent( 3 , x -> new ArrayList()).add(71);
         
         this.testName = "UPRE";
         this.testType = "UPRE";

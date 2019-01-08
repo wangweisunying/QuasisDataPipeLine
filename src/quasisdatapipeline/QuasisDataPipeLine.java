@@ -49,8 +49,8 @@ public class QuasisDataPipeLine {
     /**
      * @param args the command line arguments
      */
-    private String pillarId = "UPRE80070010000011";
-    String path = "C:\\Users\\Wei Wang\\Desktop\\FAAEDATA\\testOut\\" + pillarId + ".xlsx";
+    private String pillarId = "UPRE80080010000003";
+    String path = "D:\\QuasisData\\" + pillarId + ".xlsx";
     private String dataTable, testType, negativeLocation, testName , unitDataTable;
     private String[] indexTestMapArr, indexTestTitleArr;
     private float[] YStandard;
@@ -65,7 +65,9 @@ public class QuasisDataPipeLine {
     private Map<Integer, List<Integer>> oldPanelIndex2NewPanelIndexMap;
 
     public static void main(String[] args) throws Exception {
-        QuasisDataPipeLine test = new QuasisDataPipeLine(new Upre());
+      QuasisDataPipeLine test = new QuasisDataPipeLine(new Upre());
+    //QuasisDataPipeLine test = new QuasisDataPipeLine(new FoodAllergy12());
+   //  QuasisDataPipeLine test = new QuasisDataPipeLine(new FoodAllergy84());
         test.run();
 //        test.writeToDB(test.path);
     }
@@ -136,7 +138,7 @@ public class QuasisDataPipeLine {
         rawMap = new HashMap();
         DataBaseCon db = new V7DataBaseCon();
         String sql = "select `index` , julien_barcode , row ,col , `signal`  from \n"
-                + "(SELECT * FROM " + dataTable + " where pillar_plate_id like '" + pillarId + "_300 sec') as a  \n"
+                + "(SELECT * FROM " + dataTable + " where pillar_plate_id like '" + pillarId + "_180 sec') as a  \n"
                 + "left join\n"
                 + "(select * from vibrant_test_tracking.well_info where well_plate_id = (select well_plate_id from  vibrant_test_tracking.pillar_plate_info where pillar_plate_id = '" + pillarId + "')) as b\n"
                 + "on a.row = b.well_row and a.col = b.well_col order by julien_barcode,`index`;";
@@ -170,28 +172,73 @@ public class QuasisDataPipeLine {
         }
         DataBaseCon db = new LXDataBaseCon();
         if (testName.startsWith("FAAE")) {
-            String dupSql = "SELECT\n"
-                    + "   group_concat(sd.julien_barcode order by sd.julien_barcode desc)\n"
-                    + "FROM\n"
-                    + "    vibrant_america_information.`patient_details` pd\n"
-                    + "        JOIN\n"
-                    + "    vibrant_america_information.`sample_data` sd ON sd.`patient_id` = pd.`patient_id`\n"
-                    + "        JOIN\n"
-                    + "    vibrant_america_information.`customers_of_patients` cop ON cop.`patient_id` = sd.`patient_id`\n"
-                    + "        AND cop.`customer_id` = sd.`customer_id`\n"
-                    + "        join\n"
-                    + "          vibrant_america_information.`customer_details` cd on  cd.customer_id = sd.customer_id\n"
-                    + "        AND cop.`customer_id` = sd.`customer_id`\n"
-                    + "        join vibrant_america_information.selected_test_list slt on slt.sample_id = sd.sample_id\n"
-                    + "        join `vibrant_america_test_result`.`Result_Allergy_Panel` fa1 on fa1.sample_id = sd.sample_id\n"
-                    + "WHERE\n"
-                    + "	 slt.Order_Allergy_Panel != 0\n"
-                    + "    and sd.`customer_id` < 999000\n"
-                    + "   group by PD.PATIENT_ID having count(*)>=2  order by substring(group_concat(sd.julien_barcode order by sd.julien_barcode desc),1,10) desc;";
+            StringBuilder sbJulien = new StringBuilder();
+            for (Unit unit : rawMap.values()) {
+                String julien = unit.getJulien();
+//                System.out.println(julien);
+                if(julien == null || Character.isLetter(julien.charAt(0)))continue;
+                sbJulien.append(julien).append(",");
+            }
+            sbJulien.setLength(sbJulien.length() - 1);
+            
+            
+            
+            String dupSql = "SELECT \n" +
+"    MAX(sd.sample_id) AS A, sd1.*\n" +
+"FROM\n" +
+"    vibrant_america_information.sample_data sd\n" +
+"        JOIN\n" +
+"    (SELECT \n" +
+"        pd.patient_id,\n" +
+"            COUNT(sd.sample_id) AS sample_count,\n" +
+"            GROUP_CONCAT(sd.sample_id, ':', package_id_arr\n" +
+"                ORDER BY sd.sample_id DESC),            \n" +
+"            GROUP_CONCAT(julien_barcode\n" +
+"                ORDER BY sd.sample_id DESC) as barcode,\n" +
+"            GROUP_CONCAT(sample_collection_time\n" +
+"                ORDER BY sd.sample_id DESC)\n" +
+"    FROM\n" +
+"        vibrant_america_information.sample_data sd\n" +
+"    JOIN vibrant_america_information.selected_test_list stl ON stl.sample_id = sd.sample_id\n" +
+"    JOIN vibrant_america_information.patient_details pd ON pd.patient_id = sd.patient_id\n" +
+"    WHERE\n" +
+"        (stl.Order_Allergy_Panel != 0\n" +
+"            OR stl.Order_Food_Allergen_Panel1 != 0\n" +
+"            OR stl.Order_Food_Allergen_Panel2 != 0\n" +
+"            OR stl.Order_Food_Allergen_Panel3 != 0\n" +
+"            OR stl.Order_Food_Allergen_Panel4 != 0\n" +
+"            or stl.Order_Corn_Zoomer_Panel1 != 0\n" +
+"			or stl.Order_Egg_Zoomer_Panel1 != 0\n" +
+"			or stl.Order_Dairy_Zoomer_Panel1 != 0\n" +
+"			or stl.Order_Peanut_Zoomer_Panel2 != 0\n" +
+"            )\n" +
+"            AND sd.customer_id < 999000\n" +
+"    GROUP BY pd.patient_id\n" +
+"    HAVING COUNT(sd.sample_id) > 1\n" +
+"    ORDER BY sd.sample_id DESC) sd1 ON sd1.patient_id = sd.patient_id\n" +
+"        JOIN\n" +
+"    vibrant_america_information.selected_test_list stl ON stl.sample_id = sd.sample_id\n" +
+"WHERE\n" +
+"    (stl.Order_Allergy_Panel != 0\n" +
+"        OR stl.Order_Food_Allergen_Panel1 != 0\n" +
+"        OR stl.Order_Food_Allergen_Panel2 != 0\n" +
+"        OR stl.Order_Food_Allergen_Panel3 != 0\n" +
+"        OR stl.Order_Food_Allergen_Panel4 != 0\n" +
+"        or stl.Order_Corn_Zoomer_Panel1 != 0\n" +
+"        or stl.Order_Egg_Zoomer_Panel1 != 0\n" +
+"        or stl.Order_Dairy_Zoomer_Panel1 != 0\n" +
+"        or stl.Order_Peanut_Zoomer_Panel2 != 0\n" +
+"        )\n" +
+"        AND sd.customer_id < 999000\n" +
+"        and ( \n" +
+"	barcode in("+ sbJulien.toString() +")\n" +
+"\n" +
+") GROUP BY sd.patient_id\n" +
+"ORDER BY A DESC;";
             System.out.println(dupSql);
             ResultSet rs = db.read(dupSql);
             while (rs.next()) {
-                String tmp = rs.getString(1);
+                String tmp = rs.getString(5);
                 for (String newJun : julienList) {
                     if (dupJunMap.containsKey(newJun)) {
                         continue;
@@ -370,28 +417,73 @@ public class QuasisDataPipeLine {
             }
 
         } else if (testName.equals("UPRE")) {
-            String dupSql = "SELECT\n"
-                    + "   group_concat(sd.julien_barcode order by sd.julien_barcode desc)\n"
-                    + "FROM\n"
-                    + "    vibrant_america_information.`patient_details` pd\n"
-                    + "        JOIN\n"
-                    + "    vibrant_america_information.`sample_data` sd ON sd.`patient_id` = pd.`patient_id`\n"
-                    + "        JOIN\n"
-                    + "    vibrant_america_information.`customers_of_patients` cop ON cop.`patient_id` = sd.`patient_id`\n"
-                    + "        AND cop.`customer_id` = sd.`customer_id`\n"
-                    + "        join\n"
-                    + "          vibrant_america_information.`customer_details` cd on  cd.customer_id = sd.customer_id\n"
-                    + "        AND cop.`customer_id` = sd.`customer_id`\n"
-                    + "        join vibrant_america_information.selected_test_list slt on slt.sample_id = sd.sample_id\n"
-                    + "        join `vibrant_america_test_result`.`Result_Upper_Respiratory_Panel` fa1 on fa1.sample_id = sd.sample_id\n"
-                    + "WHERE\n"
-                    + "	 slt.Order_Upper_Respiratory_Panel != 0\n"
-                    + "    and sd.`customer_id` < 999000\n"
-                    + "   group by PD.PATIENT_ID having count(*)>=2  order by substring(group_concat(sd.julien_barcode order by sd.julien_barcode desc),1,10) desc;";
+            StringBuilder sbJulien = new StringBuilder();
+            for (Unit unit : rawMap.values()) {
+                String julien = unit.getJulien();
+//                System.out.println(julien);
+                if(julien == null || Character.isLetter(julien.charAt(0)))continue;
+                sbJulien.append(julien).append(",");
+            }
+            sbJulien.setLength(sbJulien.length() - 1);
+            
+            
+            
+            String dupSql = "SELECT \n" +
+"    MAX(sd.sample_id) AS A, sd1.*\n" +
+"FROM\n" +
+"    vibrant_america_information.sample_data sd\n" +
+"        JOIN\n" +
+"    (SELECT \n" +
+"        pd.patient_id,\n" +
+"            COUNT(sd.sample_id) AS sample_count,\n" +
+"            GROUP_CONCAT(sd.sample_id, ':', package_id_arr\n" +
+"                ORDER BY sd.sample_id DESC),            \n" +
+"            GROUP_CONCAT(julien_barcode\n" +
+"                ORDER BY sd.sample_id DESC) as barcode,\n" +
+"            GROUP_CONCAT(sample_collection_time\n" +
+"                ORDER BY sd.sample_id DESC)\n" +
+"    FROM\n" +
+"        vibrant_america_information.sample_data sd\n" +
+"    JOIN vibrant_america_information.selected_test_list stl ON stl.sample_id = sd.sample_id\n" +
+"    JOIN vibrant_america_information.patient_details pd ON pd.patient_id = sd.patient_id\n" +
+"    WHERE\n" +
+"        (stl.Order_Allergy_Panel != 0\n" +
+"            OR stl.Order_Food_Allergen_Panel1 != 0\n" +
+"            OR stl.Order_Food_Allergen_Panel2 != 0\n" +
+"            OR stl.Order_Food_Allergen_Panel3 != 0\n" +
+"            OR stl.Order_Food_Allergen_Panel4 != 0\n" +
+"            or stl.Order_Corn_Zoomer_Panel1 != 0\n" +
+"			or stl.Order_Egg_Zoomer_Panel1 != 0\n" +
+"			or stl.Order_Dairy_Zoomer_Panel1 != 0\n" +
+"			or stl.Order_Peanut_Zoomer_Panel2 != 0\n" +
+"            )\n" +
+"            AND sd.customer_id < 999000\n" +
+"    GROUP BY pd.patient_id\n" +
+"    HAVING COUNT(sd.sample_id) > 1\n" +
+"    ORDER BY sd.sample_id DESC) sd1 ON sd1.patient_id = sd.patient_id\n" +
+"        JOIN\n" +
+"    vibrant_america_information.selected_test_list stl ON stl.sample_id = sd.sample_id\n" +
+"WHERE\n" +
+"    (stl.Order_Allergy_Panel != 0\n" +
+"        OR stl.Order_Food_Allergen_Panel1 != 0\n" +
+"        OR stl.Order_Food_Allergen_Panel2 != 0\n" +
+"        OR stl.Order_Food_Allergen_Panel3 != 0\n" +
+"        OR stl.Order_Food_Allergen_Panel4 != 0\n" +
+"        or stl.Order_Corn_Zoomer_Panel1 != 0\n" +
+"        or stl.Order_Egg_Zoomer_Panel1 != 0\n" +
+"        or stl.Order_Dairy_Zoomer_Panel1 != 0\n" +
+"        or stl.Order_Peanut_Zoomer_Panel2 != 0\n" +
+"        )\n" +
+"        AND sd.customer_id < 999000\n" +
+"        and ( \n" +
+"	barcode in("+ sbJulien.toString() +")\n" +
+"\n" +
+") GROUP BY sd.patient_id\n" +
+"ORDER BY A DESC;";
             System.out.println(dupSql);
             ResultSet rs = db.read(dupSql);
             while (rs.next()) {
-                String tmp = rs.getString(1);
+                String tmp = rs.getString(5);
                 for (String newJun : julienList) {
                     if (dupJunMap.containsKey(newJun)) {
                         continue;
@@ -434,22 +526,23 @@ public class QuasisDataPipeLine {
                 }
                 sbTitle.setLength(sbTitle.length() - 1);
 
-                String sqlDup = "select julien_barcode , " + sbTitle.toString() + "\n"
-                        + "	from \n"
-                        + "   vibrant_america_information.`patient_details` pd\n"
-                        + "        JOIN\n"
-                        + "    vibrant_america_information.`sample_data` sd ON sd.`patient_id` = pd.`patient_id`\n"
-                        + "        join `vibrant_america_test_result`.`result_inhalant_panel1` fa1 on fa1.sample_id = sd.sample_id\n"
-                        + "        join `vibrant_america_test_result`.`result_inhalant_panel2` fa2 on fa2.sample_id = sd.sample_id \n"
-                        + "        join `vibrant_america_test_result`.`result_inhalant_panel3` fa3 on fa3.sample_id = sd.sample_id \n"
-                        + "	where julien_barcode in (" + sb.toString() + ");";
+                String sqlDup = "select julien_barcode , "+ sbTitle.toString() +" from \n" +
+"    vibrant_america_information.`sample_data` sd \n" +
+"		left join `vibrant_america_test_result`.`result_inhalant_panel1` fa1 on fa1.sample_id = sd.sample_id\n" +
+"        left join `vibrant_america_test_result`.`result_inhalant_panel2` fa2 on fa2.sample_id = sd.sample_id \n" +
+"        left join `vibrant_america_test_result`.`result_inhalant_panel3` fa3 on fa3.sample_id = sd.sample_id \n" +
+"	where julien_barcode in (" + sb.toString() +");";
                 System.out.println(sqlDup);
                 ResultSet rsDup = db.read(sqlDup);
                 int col = rsDup.getMetaData().getColumnCount();
                 while (rsDup.next()) {
                     String julien = rsDup.getString(1);
+                    if(rsDup.getString(3) == null){
+                        continue;
+                    } 
                     float[] unitArr = new float[indexTestMapArr.length];
                     for (int i = 2; i <= col; i++) {
+                        if(rsDup.getString(i).startsWith("Cali")) continue;
                         unitArr[i - 2] = rsDup.getFloat(i) < 0 ? 0 : rsDup.getFloat(i);
                     }
                     dupUnitMap.get(julien).setUnitArr(unitArr);
