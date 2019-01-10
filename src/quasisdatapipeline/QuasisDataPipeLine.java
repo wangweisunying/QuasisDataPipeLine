@@ -50,7 +50,7 @@ public class QuasisDataPipeLine {
      * @param args the command line arguments
      */
     private String pillarId = "UPRE80080010000003";
-    String path = "D:\\QuasisData\\" + pillarId + ".xlsx";
+    String path = "C:\\Users\\Wei Wang\\Desktop\\FAAEDATA\\testOut\\" + pillarId + ".xlsx";
     private String dataTable, testType, negativeLocation, testName , unitDataTable;
     private String[] indexTestMapArr, indexTestTitleArr;
     private float[] YStandard;
@@ -294,7 +294,14 @@ public class QuasisDataPipeLine {
                     String julien = rsDup.getString(1);
                     float[] unitArr = new float[indexTestMapArr.length];
                     for (int i = 2; i <= col; i++) {
-                        unitArr[i - 2] = rsDup.getFloat(i) < 0 ? 0 : rsDup.getFloat(i);
+                        float unit = rsDup.getFloat(i);
+                        if(unit == -999999){
+                            unit = 0.01f;
+                        }
+                        if(unit < 0){
+                            unit = 0;
+                        }
+                        unitArr[i - 2] = unit ;
                     }
                     dupUnitMap.get(julien).setUnitArr(unitArr);
                 }
@@ -322,7 +329,15 @@ public class QuasisDataPipeLine {
                             continue;
                         }
                         for (int index : oldPanelIndex2NewPanelIndexMap.get(i)) {
-                            unitArr[index] = rsDup.getFloat(i) < 0 ? 0 : rsDup.getFloat(i);
+                            float unit = rsDup.getFloat(i);
+                            if(unit == -999999) {
+                                unit = 0.01f;
+                            }
+                            if(unit < 0){
+                                unit = 0; 
+                            }
+                            
+                            unitArr[index] = unit;
                         }
                     }
 
@@ -543,7 +558,14 @@ public class QuasisDataPipeLine {
                     float[] unitArr = new float[indexTestMapArr.length];
                     for (int i = 2; i <= col; i++) {
                         if(rsDup.getString(i).startsWith("Cali")) continue;
-                        unitArr[i - 2] = rsDup.getFloat(i) < 0 ? 0 : rsDup.getFloat(i);
+                        float unit = rsDup.getFloat(i);
+                        if(unit == -999999) {
+                            unit = 0.01f;
+                        }
+                        if(unit < 0){
+                            unit = 0; 
+                        }
+                        unitArr[i - 2] = unit ;
                     }
                     dupUnitMap.get(julien).setUnitArr(unitArr);
                 }
@@ -571,7 +593,14 @@ public class QuasisDataPipeLine {
                             continue;
                         }
                         for (int index : oldPanelIndex2NewPanelIndexMap.get(i)) {
-                            unitArr[index] = rsDup.getFloat(i) < 0 ? 0 : rsDup.getFloat(i);
+                            float unit = rsDup.getFloat(i);
+                            if(unit == -999999) {
+                                unit = 0.01f;
+                            }
+                            if(unit < 0){
+                                unit = 0; 
+                            }
+                            unitArr[index] = unit;
                         }
                     }
 
@@ -797,7 +826,7 @@ public class QuasisDataPipeLine {
 
         // handle title
         Sheet sheetUnit = wb.createSheet("unit");
-//        sheetUnit.createFreezePane(1, 0);
+        sheetUnit.createFreezePane(1, 0);
 
         int unitRowCt = 0;
         int unitColCt = 0;
@@ -863,9 +892,12 @@ public class QuasisDataPipeLine {
 
                     String rowLowLOD = "raw!E" + (rowCt + 1);
                     String rowHighLOD = "raw!F" + (rowCt + 1);
+                    
+                    String LOD = "MIN(" + lowLOD + "," + rowLowLOD + ")";
+                    String HOD = "MAX(" + highLOD + "," + rowHighLOD + ")"; 
+                    
                     String unitTras = "IF(2*" + raw + "<=" + neg + ",0.05," + "2*raw!" + colChar + (aRow + 1) + "*EXP(raw!" + colChar + (bRow + 1) + "*" + raw + "))";
-                    String finalForm = "IF(" + unitTras + "<" + lowLOD + ",0.05,IF(" + unitTras + ">" + highLOD + ",100," + unitTras + "))";
-                    finalForm = "IF(" + finalForm + "<" + rowLowLOD + ",0.05,IF(" + finalForm + ">" + rowHighLOD + ",100," + finalForm + "))";
+                    String finalForm = "IF(" + unitTras + "<" + LOD + ",0.05,IF(" + unitTras + ">" + HOD + ",100," + unitTras + "))";
 
                     curUnitRow.createCell(unitColCt++).setCellFormula(finalForm);
                 }
@@ -927,11 +959,11 @@ public class QuasisDataPipeLine {
             }
 
         }
-        String range = "E2:" + ExcelOperation.transferIntgerToString(unitColCt) + (unitRowCt);
-        System.out.println(range);
-        ExcelOperation.setConditionalFormatting(sheetUnit, IndexedColors.RED, ComparisonOperator.GT, new String[]{"10"}, range);
-        ExcelOperation.setConditionalFormatting(sheetUnit, IndexedColors.YELLOW, ComparisonOperator.BETWEEN, new String[]{"0.8", "10"}, range);
-        ExcelOperation.setConditionalFormatting(sheetUnit, IndexedColors.GREEN, ComparisonOperator.LT, new String[]{"0.8"}, range);
+//        String range = "E2:" + ExcelOperation.transferIntgerToString(unitColCt) + (unitRowCt);
+//        System.out.println(range);
+//        ExcelOperation.setConditionalFormatting(sheetUnit, IndexedColors.RED, ComparisonOperator.GT, new String[]{"10"}, range);
+//        ExcelOperation.setConditionalFormatting(sheetUnit, IndexedColors.YELLOW, ComparisonOperator.BETWEEN, new String[]{"0.8", "10"}, range);
+//        ExcelOperation.setConditionalFormatting(sheetUnit, IndexedColors.GREEN, ComparisonOperator.LT, new String[]{"0.8"}, range);
 
         ExcelOperation.writeExcel(path, wb);
         File file = new File(path);
